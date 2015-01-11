@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/ttacon/pretty"
@@ -34,8 +36,14 @@ func handleBuild(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	clean, err := url.QueryUnescape(string(byt))
+	if err != nil {
+		w.WriteHeader(http.StatusOK) // tell travis everything is okay
+		return
+	}
+
 	var data TravisCIWebHookNotification
-	err = json.Unmarshal(byt, &data)
+	err = json.Unmarshal([]byte(strings.TrimPrefix(clean, "payload=")), &data)
 	fmt.Println("err: ", err)
 	pretty.Println(data)
 	w.WriteHeader(http.StatusOK)
