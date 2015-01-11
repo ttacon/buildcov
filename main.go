@@ -42,6 +42,8 @@ func handleBuild(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Println(strings.TrimPrefix(clean, "payload="))
+
 	var data TravisCIPayload
 	err = json.Unmarshal([]byte(strings.TrimPrefix(clean, "payload=")), &data)
 	fmt.Println("err: ", err)
