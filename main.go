@@ -42,19 +42,15 @@ func handleBuild(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var data TravisCIWebHookNotification
+	var data TravisCIPayload
 	err = json.Unmarshal([]byte(strings.TrimPrefix(clean, "payload=")), &data)
 	fmt.Println("err: ", err)
 	pretty.Println(data)
 	w.WriteHeader(http.StatusOK)
 }
 
-type TravisCIWebHookNotification struct {
-	Payload *TravisCIPayload `json:"payload"`
-}
-
 type TravisCIPayload struct {
-	ID             int        `json:""`
+	ID             int        `json:"id"`
 	Number         string     `json:"number"`
 	Status         *string    `json:"status"`
 	StartedAt      *time.Time `json:"started_at"`
