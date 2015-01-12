@@ -84,6 +84,8 @@ func retrieveCoverageInfo(id int) {
 	}
 
 	ms := matcher.FindStringSubmatch(string(l))
+	fmt.Println(string(l[len(l)-200:]))
+	fmt.Println(ms)
 	fmt.Println("coverage: ", ms[1])
 }
 
