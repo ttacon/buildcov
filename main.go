@@ -2,20 +2,26 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/ttacon/pretty"
+	"github.com/ttacon/travisci"
 )
 
 var matcher = regexp.MustCompile("coverage: ([\\d]+\\.[\\d]+)% of statements")
+var travisToken = flag.String("tt", "", "travis CI token to use (only for testing)")
 
 func main() {
+	flag.Parse()
+
 	http.HandleFunc("/travisci", handleBuild)
 	http.ListenAndServe(":18009", nil)
 }
@@ -49,6 +55,36 @@ func handleBuild(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("err: ", err)
 	pretty.Println(data)
 	w.WriteHeader(http.StatusOK)
+
+	go retrieveCoverageInfo(data.ID)
+}
+
+func retrieveCoverageInfo(id int) {
+	fmt.Println("=====")
+
+	c := travisci.NewClientFromTravis(*travisToken)
+	build, err := c.GetBuildByID(strconv.Itoa(id))
+	if err != nil {
+		fmt.Println("failed to retrieve build:", id, ", err:", err)
+		return
+	}
+
+	if len(build.JobIDs) == 0 {
+		fmt.Println("no jobs were found for build:", id)
+		return
+	}
+
+	// we only really care about one build right now
+	// so grab the last one
+	jID := build.JobIDs[len(build.JobIDs)-1]
+	l, err := c.ArchivedLogByJob(jID)
+	if err != nil {
+		fmt.Println("failed to retreive log:", err)
+		return
+	}
+
+	ms := matcher.FindStringSubmatch(string(l))
+	fmt.Println("coverage: ", ms[1])
 }
 
 type TravisCIPayload struct {
