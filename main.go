@@ -54,7 +54,7 @@ func handleBuild(w http.ResponseWriter, r *http.Request) {
 type TravisCIPayload struct {
 	ID             int        `json:"id"`
 	Number         string     `json:"number"`
-	Status         *string    `json:"status"`
+	Status         *int       `json:"status"`
 	StartedAt      *time.Time `json:"started_at"`
 	FinishedAt     *time.Time `json:"finished_at"`
 	StatusMessage  string     `json:"status_message"`
